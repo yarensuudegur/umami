@@ -7,6 +7,7 @@ import { Colors } from '@/constants/theme';
 import { PantryProvider } from '@/features/pantry/pantry-provider';
 import { SettingsProvider } from '@/features/settings/settings-provider';
 import { ShoppingProvider } from '@/features/shopping/shopping-provider';
+import { WorkoutProvider } from '@/features/workout/workout-provider';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -26,6 +27,7 @@ export default function RootLayout() {
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <SettingsProvider>
         <ShoppingProvider>
+        <WorkoutProvider>
         <PantryProvider>
           <StatusBar style="auto" />
           <Tabs
@@ -53,6 +55,7 @@ export default function RootLayout() {
             ))}
           </Tabs>
         </PantryProvider>
+        </WorkoutProvider>
         </ShoppingProvider>
       </SettingsProvider>
     </ThemeProvider>
