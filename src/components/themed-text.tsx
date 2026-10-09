@@ -13,6 +13,8 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
 
   return (
     <Text
+      // Respect the user's text size, but cap it so rows, chips and the day strip do not break.
+      maxFontSizeMultiplier={1.3}
       style={[
         { color: theme[themeColor ?? 'text'] },
         type === 'default' && styles.default,

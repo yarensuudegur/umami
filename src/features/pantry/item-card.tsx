@@ -4,7 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-import { daysUntilExpiry, isExpired, isExpiringSoon, isLow } from './status';
+import { daysUntilExpiry, formatDate, isExpired, isExpiringSoon, isLow } from './status';
 import { categoryEmoji, type PantryItem } from './types';
 
 type Tone = 'danger' | 'warning' | 'caution';
@@ -50,7 +50,7 @@ export function ItemCard({ item, onPress }: { item: PantryItem; onPress: () => v
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
           {item.category}
-          {item.expiryDate && days !== null && days > 3 ? ` · ${item.expiryDate}` : ''}
+          {item.expiryDate && days !== null && days > 3 ? ` · Expires ${formatDate(item.expiryDate)}` : ''}
         </ThemedText>
         {(isExpired(item) || isExpiringSoon(item) || isLow(item)) && (
           <View style={styles.badges}>

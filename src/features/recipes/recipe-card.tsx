@@ -83,9 +83,9 @@ const styles = StyleSheet.create({
   emojiText: { fontSize: 26, lineHeight: 32 },
   body: { flex: 1, gap: 4 },
   name: { fontSize: 17, fontWeight: '700' },
-  pills: { flexDirection: 'row', gap: Spacing.two, marginTop: 2 },
+  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two, marginTop: 2 },
   pill: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: Radius.pill, alignSelf: 'flex-start' },
   flag: { marginTop: 2 },
-  cart: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
+  cart: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
   pillText: { fontSize: 12, fontWeight: '700', lineHeight: 16 },
 });

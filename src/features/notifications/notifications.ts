@@ -7,8 +7,6 @@ import type { PlannedNotification } from './schedule';
 export const notificationsSupported = Platform.OS !== 'web';
 
 const CHANNEL_ID = 'default';
-/** The test notification must survive the automatic re-syncs, so it is never cancelled by them. */
-const TEST_ID = 'umami-test';
 
 if (notificationsSupported) {
   // Without a handler iOS does not show notifications while the app is open. Show them as a banner.
@@ -73,13 +71,7 @@ export function syncNotifications(list: PlannedNotification[]): Promise<void> {
   if (!notificationsSupported) return Promise.resolve();
   chain = chain
     .then(async () => {
-      // Cancel only our own scheduled reminders; a pending test notification is left alone.
-      const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-      await Promise.all(
-        scheduled
-          .filter((s) => s.identifier !== TEST_ID)
-          .map((s) => Notifications.cancelScheduledNotificationAsync(s.identifier)),
-      );
+      await Notifications.cancelAllScheduledNotificationsAsync();
       if (list.length === 0) return;
       const { status } = await Notifications.getPermissionsAsync();
       if (status !== 'granted') {
@@ -100,22 +92,4 @@ export function syncNotifications(list: PlannedNotification[]): Promise<void> {
       console.error('[notifications] scheduling failed:', error);
     });
   return chain;
-}
-
-/** Fires a notification in a few seconds so the user can check that everything works. Throws if scheduling fails. */
-export async function sendTestNotification(seconds = 5): Promise<string> {
-  try {
-    await ensureChannel();
-    const id = await Notifications.scheduleNotificationAsync({
-      identifier: TEST_ID,
-      content: { title: 'Umami 🌸', body: 'Notifications are working. Balance is served.' },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds, channelId: CHANNEL_ID },
-    });
-    const pending = await Notifications.getAllScheduledNotificationsAsync();
-    console.log('[notifications] test scheduled:', id, 'pending now:', pending.map((p) => p.identifier));
-    return id;
-  } catch (error) {
-    console.error('[notifications] scheduling the test notification failed:', error);
-    throw error;
-  }
 }

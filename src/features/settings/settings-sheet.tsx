@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Chip } from '@/components/chip';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
-import { ensurePermission, notificationsSupported, sendTestNotification } from '@/features/notifications/notifications';
+import { ensurePermission, notificationsSupported } from '@/features/notifications/notifications';
 import { useTheme } from '@/hooks/use-theme';
 
 import { applyBackup, exportBackup, pickBackup } from './backup';
@@ -65,17 +65,6 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
       }
     }
     updateNotifications({ [toggle.key]: on } as Partial<NotificationPrefs>);
-  };
-
-  const test = async () => {
-    if (!notificationsSupported) return Alert.alert('Not available', 'Notifications do not work on web.');
-    try {
-      if (!(await ensurePermission())) return permissionDenied();
-      await sendTestNotification(5);
-      Alert.alert('Test sent', 'A notification will arrive in about 5 seconds. Try locking your phone.');
-    } catch (error) {
-      Alert.alert('Could not schedule the notification', error instanceof Error ? error.message : String(error));
-    }
   };
 
   const doExport = async () => {
@@ -171,9 +160,6 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
                 </View>
               );
             })}
-            <Pressable onPress={test} style={[styles.outline, { borderColor: theme.accent }]}>
-              <ThemedText style={{ color: theme.accent, fontWeight: '700' }}>Send a test notification</ThemedText>
-            </Pressable>
           </Section>
 
           <Section title="YOUR DATA">
@@ -196,7 +182,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.four, paddingVertical: Spacing.three },
-  title: { fontSize: 28, fontWeight: '800' },
+  title: { fontSize: 28, fontWeight: '800', lineHeight: 34 },
   content: { padding: Spacing.four, paddingTop: Spacing.one, gap: Spacing.four, paddingBottom: Spacing.six },
   section: { gap: Spacing.two },
   input: { borderWidth: 1, borderRadius: Radius.md, paddingHorizontal: Spacing.three, paddingVertical: 14, fontSize: 16 },

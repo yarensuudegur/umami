@@ -13,6 +13,11 @@ export function parseISODate(iso: string): Date {
   return new Date(y, m - 1, d);
 }
 
+/** "2026-10-14" → "Oct 14, 2026" for display (storage keeps the ISO form). */
+export function formatDate(iso: string): string {
+  return parseISODate(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 /** Whole days from today (local) until the expiry date; negative if past. */
 export function daysUntilExpiry(item: PantryItem, now = new Date()): number | null {
   if (!item.expiryDate) return null;

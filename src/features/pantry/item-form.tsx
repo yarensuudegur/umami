@@ -18,7 +18,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-import { parseISODate, toISODate } from './status';
+import { formatDate, parseISODate, toISODate } from './status';
 import { CATEGORIES, UNITS, type Category, type PantryItem, type Unit } from './types';
 
 type Props = {
@@ -146,7 +146,7 @@ export function ItemForm({ visible, item, initial, title, onClose, onSave, onDel
               <Pressable style={[inputStyle, styles.dateButton]} onPress={() => setShowPicker((v) => !v)}>
                 <Ionicons name="calendar-outline" size={20} color={theme.accent} />
                 <ThemedText style={{ color: expiry ? theme.text : theme.textSecondary }}>
-                  {expiry ?? 'No expiry date'}
+                  {expiry ? formatDate(expiry) : 'No expiry date'}
                 </ThemedText>
               </Pressable>
               {expiry && (

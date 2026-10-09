@@ -56,8 +56,8 @@ export default function PantryScreen() {
               <ThemedText style={styles.title}>Pantry</ThemedText>
               <ThemedText themeColor="textSecondary">
                 {items.length} {items.length === 1 ? 'item' : 'items'}
-                {expiringCount > 0 ? ` Â· ${expiringCount} expiring` : ''}
-                {lowCount > 0 ? ` Â· ${lowCount} running low` : ''}
+                {expiringCount > 0 ? ` · ${expiringCount} expiring` : ''}
+                {lowCount > 0 ? ` · ${lowCount} running low` : ''}
               </ThemedText>
 
               <View
@@ -103,7 +103,7 @@ export default function PantryScreen() {
           }
           ListEmptyComponent={
             <View style={styles.empty}>
-              <ThemedText style={styles.emptyEmoji}>ğŸ§º</ThemedText>
+              <ThemedText style={styles.emptyEmoji}>🧺</ThemedText>
               <ThemedText style={styles.emptyTitle}>
                 {items.length === 0 ? 'Your pantry is empty' : 'No matching items'}
               </ThemedText>

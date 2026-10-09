@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { useForegroundTick } from '@/hooks/use-foreground-tick';
+
 import { getExercise } from './exercises';
 import { buildWeek, dateOfDay, dayIndexOf, rebalance, weekStartOf } from './plan';
 import { EMPTY_WORKOUT_STATE, loadWorkout, saveWorkout } from './storage';
@@ -42,7 +44,10 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
     if (loaded) saveWorkout(state);
   }, [state, loaded]);
 
-  const now = new Date();
+  // Re-read the date whenever the app comes back to the foreground, so "today" is right after midnight.
+  const tick = useForegroundTick();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `tick` is the trigger for re-reading the clock.
+  const now = useMemo(() => new Date(), [tick]);
   const currentWeekStart = weekStartOf(now);
   const todayIndex = dayIndexOf(now);
   const todayISO = dateOfDay(currentWeekStart, todayIndex);

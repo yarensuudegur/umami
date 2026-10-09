@@ -65,7 +65,9 @@ export default function TodayScreen() {
   const [selected, setSelected] = useState<Recipe | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const now = new Date();
+  // Re-read the clock when the day changes (todayISO) so the greeting and date stay current.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `todayISO` is the trigger for re-reading the clock.
+  const now = useMemo(() => new Date(), [todayISO]);
   const day = week?.days[todayIndex];
   const workoutDone = completedDays.includes(todayIndex);
   const trainingToday = !!day?.focus;

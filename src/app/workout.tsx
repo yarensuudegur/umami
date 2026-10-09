@@ -21,7 +21,8 @@ export default function WorkoutScreen() {
   const { loaded, profile, week, history, progress, todayIndex, todayISO, completedDays, savePlan, toggleExercise, finishWorkout, trainToday } =
     useWorkout();
   const [tab, setTab] = useState<'week' | 'history'>('week');
-  const [picked, setPicked] = useState<number | null>(null);
+  // The chosen day is remembered together with the date it was chosen on, so it resets on a new day.
+  const [picked, setPicked] = useState<{ date: string; index: number } | null>(null);
   const [editing, setEditing] = useState(false);
   const [trainOpen, setTrainOpen] = useState(false);
 
@@ -45,7 +46,7 @@ export default function WorkoutScreen() {
     );
   }
 
-  const selected = picked ?? todayIndex;
+  const selected = picked && picked.date === todayISO ? picked.index : todayIndex;
   const day = week.days[selected];
   const date = dateOfDay(week.weekStart, selected);
   const isToday = selected === todayIndex;
@@ -88,7 +89,7 @@ export default function WorkoutScreen() {
             <HistoryView history={history} />
           ) : (
             <>
-              <DayStrip week={week} selected={selected} todayIndex={todayIndex} completedDays={completedDays} onSelect={setPicked} />
+              <DayStrip week={week} selected={selected} todayIndex={todayIndex} completedDays={completedDays} onSelect={(index) => setPicked({ date: todayISO, index })} />
 
               {week.note && (
                 <View style={[styles.note, { backgroundColor: theme.cautionSoft }]}>
