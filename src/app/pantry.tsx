@@ -1,4 +1,4 @@
-﻿import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,7 +11,7 @@ import { ItemCard } from '@/features/pantry/item-card';
 import { ItemForm } from '@/features/pantry/item-form';
 import { isExpired, isExpiringSoon, isLow, urgency } from '@/features/pantry/status';
 import { CATEGORIES, type Category, type PantryItem } from '@/features/pantry/types';
-import { usePantry } from '@/features/pantry/use-pantry';
+import { usePantry } from '@/features/pantry/pantry-provider';
 
 export default function PantryScreen() {
   const theme = useTheme();

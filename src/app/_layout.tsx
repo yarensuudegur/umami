@@ -1,9 +1,11 @@
-﻿import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { DarkTheme, DefaultTheme, ThemeProvider, Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { PantryProvider } from '@/features/pantry/pantry-provider';
+import { SettingsProvider } from '@/features/settings/settings-provider';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -21,31 +23,35 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <StatusBar style="auto" />
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: colors.accent,
-          tabBarInactiveTintColor: colors.textSecondary,
-          tabBarStyle: {
-            backgroundColor: colors.backgroundElement,
-            borderTopColor: colors.border,
-          },
-          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-        }}>
-        {TABS.map((tab) => (
-          <Tabs.Screen
-            key={tab.name}
-            name={tab.name}
-            options={{
-              title: tab.title,
-              tabBarIcon: ({ color, size, focused }) => (
-                <Ionicons name={focused ? tab.iconActive : tab.icon} size={size} color={color} />
-              ),
-            }}
-          />
-        ))}
-      </Tabs>
+      <SettingsProvider>
+        <PantryProvider>
+          <StatusBar style="auto" />
+          <Tabs
+            screenOptions={{
+              headerShown: false,
+              tabBarActiveTintColor: colors.accent,
+              tabBarInactiveTintColor: colors.textSecondary,
+              tabBarStyle: {
+                backgroundColor: colors.backgroundElement,
+                borderTopColor: colors.border,
+              },
+              tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+            }}>
+            {TABS.map((tab) => (
+              <Tabs.Screen
+                key={tab.name}
+                name={tab.name}
+                options={{
+                  title: tab.title,
+                  tabBarIcon: ({ color, size, focused }) => (
+                    <Ionicons name={focused ? tab.iconActive : tab.icon} size={size} color={color} />
+                  ),
+                }}
+              />
+            ))}
+          </Tabs>
+        </PantryProvider>
+      </SettingsProvider>
     </ThemeProvider>
   );
 }

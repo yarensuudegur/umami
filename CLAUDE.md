@@ -27,9 +27,11 @@ The app is called **Umami**: a kitchen pantry, recipe and workout assistant (Exp
 
 ## Architecture
 
-- **Routes** (`src/app/`): flat expo-router files. `_layout.tsx` defines the JS `<Tabs>` (Today = `index`, Pantry, Recipes, Shopping, Workout). Tabs other than Pantry render `components/coming-soon.tsx`.
-- **Features** (`src/features/<name>/`, currently only `pantry`) follow one layered layout, and new features should copy it:
-  `types.ts` (model, units, categories) → `storage.ts` (AsyncStorage, versioned key `umami.pantry.v1`; use `umami.<feature>.vN` for new ones) → `use-pantry.ts` (state hook; persists only after the initial load finishes so it can never overwrite stored data with `[]`) → `status.ts` (pure logic) → UI (`item-card.tsx`, `item-form.tsx`).
+- **Routes** (`src/app/`): flat expo-router files. `_layout.tsx` defines the JS `<Tabs>` (Today = `index`, Pantry, Recipes, Shopping, Workout) and wraps them in `SettingsProvider` and `PantryProvider`. Today, Shopping and Workout still render `components/coming-soon.tsx`.
+- **Shared state**: pantry and settings live in context providers (`features/pantry/pantry-provider.tsx`, `features/settings/settings-provider.tsx`) so every tab sees the same data. Never keep a second copy of pantry state in a screen. Providers persist only after the initial load finishes so they can never overwrite stored data with `[]`.
+- **Features** (`src/features/<name>/`: `pantry`, `recipes`, `settings`) follow a layered layout, and new features should copy it:
+  `types.ts` (model) → storage (AsyncStorage, versioned keys `umami.pantry.v1`, `umami.settings.v1`; use `umami.<feature>.vN` for new ones) → provider/hook → pure logic (`status.ts`, `matching.ts`, `cook.ts`) → UI.
+- **Recipes** (`features/recipes/`): `data.ts` is a static list of 45 recipes (nutrition values are per serving and estimated). `matching.ts` matches recipe ingredients to free-text pantry items (normalized names, recipe `aliases`, g/kg and ml/l conversion; staples like salt, oil and common spices are never counted missing) and returns per-ingredient `have | short | missing | staple`. Recipes with 0 problems go under "You have everything", 1–2 under "Missing 1–2 items". `cook.ts` (`planCooking`) computes pantry deductions for "I cooked this", taking soonest-expiring items first; items that reach 0 are removed.
 - **Pantry rules** (`status.ts`): expiry dates are stored as local `yyyy-mm-dd` strings (no timezone shifts); "expiring soon" = 0–3 days left, "expired" = negative, "running low" = `quantity <= lowThreshold` (threshold 0 disables it). The list is sorted by `urgency()`.
 - **Theming**: `constants/theme.ts` holds `Colors` (light/dark, including badge tone colors), `Spacing` and `Radius`, consumed through `hooks/use-theme.ts`, `ThemedText` and `ThemedView`. Don't hardcode colors in screens.
 

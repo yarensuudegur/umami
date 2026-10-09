@@ -1,4 +1,4 @@
-﻿import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import {
