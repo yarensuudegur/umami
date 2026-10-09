@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Chip } from '@/components/chip';
@@ -15,6 +15,7 @@ import { PlanSetup } from '@/features/workout/plan-setup';
 import { TrainTodaySheet } from '@/features/workout/train-today-sheet';
 import { useWorkout } from '@/features/workout/workout-provider';
 import { useTheme } from '@/hooks/use-theme';
+import { showAlert } from '@/lib/dialog';
 
 export default function WorkoutScreen() {
   const theme = useTheme();
@@ -60,7 +61,7 @@ export default function WorkoutScreen() {
     const message =
       done === 0 ? 'You have not ticked any exercise yet.' : done < total ? `You completed ${done} of ${total} exercises.` : null;
     if (!message) return finishWorkout(date);
-    Alert.alert('Finish workout?', message, [
+    showAlert('Finish workout?', message, [
       { text: 'Keep going', style: 'cancel' },
       { text: 'Finish', onPress: () => finishWorkout(date) },
     ]);

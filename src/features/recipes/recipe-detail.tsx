@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -9,6 +9,7 @@ import { usePantry } from '@/features/pantry/pantry-provider';
 import { useSettings } from '@/features/settings/settings-provider';
 import { useShopping } from '@/features/shopping/shopping-provider';
 import { useTheme } from '@/hooks/use-theme';
+import { showAlert } from '@/lib/dialog';
 
 import { planCooking } from './cook';
 import { analyzeRecipe, formatAmount, missingToShop } from './matching';
@@ -30,10 +31,10 @@ export function RecipeDetail({ recipe, onClose }: { recipe: Recipe; onClose: () 
   const cook = () => {
     const plan = planCooking(recipe, servings, items);
     if (plan.lines.length === 0) {
-      return Alert.alert('Nothing to remove', 'None of the ingredients for this recipe were found in your pantry.');
+      return showAlert('Nothing to remove', 'None of the ingredients for this recipe were found in your pantry.');
     }
     const skipped = plan.skipped.length ? `\n\nNot in pantry (skipped): ${plan.skipped.join(', ')}` : '';
-    Alert.alert(`Cook ${servings} ${servings === 1 ? 'serving' : 'servings'}?`, `This will update your pantry:\n\n${plan.lines.join('\n')}${skipped}`, [
+    showAlert(`Cook ${servings} ${servings === 1 ? 'serving' : 'servings'}?`, `This will update your pantry:\n\n${plan.lines.join('\n')}${skipped}`, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'I cooked this',

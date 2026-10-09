@@ -13,6 +13,12 @@ export function parseISODate(iso: string): Date {
   return new Date(y, m - 1, d);
 }
 
+/** True for a real calendar date written as yyyy-mm-dd (rejects "2026-02-31"). */
+export function isValidISODate(iso: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false;
+  return toISODate(parseISODate(iso)) === iso;
+}
+
 /** "2026-10-14" → "Oct 14, 2026" for display (storage keeps the ISO form). */
 export function formatDate(iso: string): string {
   return parseISODate(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });

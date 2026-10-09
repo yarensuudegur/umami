@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { DarkTheme, DefaultTheme, ThemeProvider, Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 import { NotificationSync } from '@/features/notifications/notification-sync';
@@ -42,6 +42,8 @@ export default function RootLayout() {
               tabBarStyle: {
                 backgroundColor: colors.backgroundElement,
                 borderTopColor: colors.border,
+                // The default web tab bar is too short for icon + label and clips the labels.
+                ...(Platform.OS === 'web' ? { height: 68, paddingTop: 6, paddingBottom: 10 } : null),
               },
               tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
             }}>

@@ -11,6 +11,16 @@ npx tsc --noEmit    # typecheck
 npx expo lint       # lint
 ```
 
+## Web demo
+
+A web build is published to GitHub Pages on every push to `main`: https://yarensuudegur.github.io/umami
+
+It stores data in the browser only. Reminders (notifications) and the native date picker are only available in the mobile app; the web version uses a typed `YYYY-MM-DD` date field instead.
+
+```bash
+npx expo export -p web   # builds ./dist (served from /umami on GitHub Pages)
+```
+
 Notes:
 - Exercise photos come from [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (The Unlicense, public domain).
 - Expo Go always shows its own icon and splash screen. The Umami icon and splash only appear in a development or release build.

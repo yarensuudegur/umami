@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Linking, Modal, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Chip } from '@/components/chip';
@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { ensurePermission, notificationsSupported } from '@/features/notifications/notifications';
 import { useTheme } from '@/hooks/use-theme';
+import { showAlert } from '@/lib/dialog';
 
 import { applyBackup, exportBackup, pickBackup } from './backup';
 import { summarize } from './backup-format';
@@ -42,26 +43,26 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   const done = () => {
     const value = Number(goal.replace(',', '.'));
     if (!Number.isFinite(value) || value < 10 || value > 400) {
-      return Alert.alert('Invalid goal', 'Enter a daily protein goal between 10 and 400 g.');
+      return showAlert('Invalid goal', 'Enter a daily protein goal between 10 and 400 g.');
     }
     setDailyProteinGoal(Math.round(value));
     onClose();
   };
 
   const permissionDenied = () =>
-    Alert.alert('Notifications are off', 'Allow notifications for this app in your phone settings to get reminders.', [
+    showAlert('Notifications are off', 'Allow notifications for this app in your phone settings to get reminders.', [
       { text: 'Not now', style: 'cancel' },
       { text: 'Open settings', onPress: () => Linking.openSettings() },
     ]);
 
   const setToggle = async (toggle: Toggle, on: boolean) => {
     if (on) {
-      if (!notificationsSupported) return Alert.alert('Not available', 'Notifications do not work on web.');
+      if (!notificationsSupported) return showAlert('Not available', 'Notifications do not work on web.');
       try {
         if (!(await ensurePermission())) return permissionDenied();
       } catch (error) {
         console.error('[notifications] permission request failed:', error);
-        return Alert.alert('Could not ask for permission', error instanceof Error ? error.message : String(error));
+        return showAlert('Could not ask for permission', error instanceof Error ? error.message : String(error));
       }
     }
     updateNotifications({ [toggle.key]: on } as Partial<NotificationPrefs>);
@@ -72,7 +73,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
     try {
       await exportBackup();
     } catch (e) {
-      Alert.alert('Export failed', e instanceof Error ? e.message : 'Something went wrong.');
+      showAlert('Export failed', e instanceof Error ? e.message : 'Something went wrong.');
     } finally {
       setBusy(false);
     }
@@ -83,9 +84,9 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
     try {
       const picked = await pickBackup();
       if (picked.status === 'cancelled') return;
-      if (picked.status === 'invalid') return Alert.alert('Cannot import', picked.error);
+      if (picked.status === 'invalid') return showAlert('Cannot import', picked.error);
       const { backup } = picked;
-      Alert.alert('Replace all data?', `This backup contains ${summarize(backup)}.\n\nEverything currently on this device will be replaced.`, [
+      showAlert('Replace all data?', `This backup contains ${summarize(backup)}.\n\nEverything currently on this device will be replaced.`, [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Replace',
@@ -95,13 +96,13 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
               await applyBackup(backup);
               reloadAll();
             } catch {
-              Alert.alert('Import failed', 'Your data could not be written. Nothing was changed.');
+              showAlert('Import failed', 'Your data could not be written. Nothing was changed.');
             }
           },
         },
       ]);
     } catch (e) {
-      Alert.alert('Import failed', e instanceof Error ? e.message : 'Something went wrong.');
+      showAlert('Import failed', e instanceof Error ? e.message : 'Something went wrong.');
     } finally {
       setBusy(false);
     }
@@ -135,7 +136,15 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
           </Section>
 
           <Section title="NOTIFICATIONS">
-            {TOGGLES.map((t) => {
+            {!notificationsSupported && (
+              <View style={[styles.card, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
+                <ThemedText style={styles.toggleTitle}>Reminders need the mobile app</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  Expiry, restock and workout reminders are not available in the browser. Open Umami on your phone to use them.
+                </ThemedText>
+              </View>
+            )}
+            {notificationsSupported && TOGGLES.map((t) => {
               const on = settings.notifications[t.key];
               return (
                 <View key={t.key} style={card}>
@@ -164,7 +173,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
 
           <Section title="YOUR DATA">
             <ThemedText type="small" themeColor="textSecondary">
-              Everything lives on this device. Export a backup file to keep it safe or move it to another phone.
+              Everything lives on this device{notificationsSupported ? '' : ' (in this browser)'}. Export a backup file to keep it safe or move it to another phone.
             </ThemedText>
             <Pressable disabled={busy} onPress={doExport} style={[styles.outline, { borderColor: theme.accent, opacity: busy ? 0.5 : 1 }]}>
               <ThemedText style={{ color: theme.accent, fontWeight: '700' }}>Export all data</ThemedText>

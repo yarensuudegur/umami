@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { Platform } from 'react-native';
 
 import { BACKUP_KEYS, backupFileName, emptyData, validateBackup, type Backup, type BackupData } from './backup-format';
 
@@ -27,6 +28,19 @@ export async function buildBackup(): Promise<Backup> {
 
 /** Writes a backup JSON file to the cache and opens the share sheet (Save to Files, AirDrop, mail …). */
 export async function exportBackup(): Promise<void> {
+  if (Platform.OS === 'web') {
+    // No share sheet or file system in the browser: download the JSON file instead.
+    const json = JSON.stringify(await buildBackup(), null, 2);
+    const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = backupFileName();
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    return;
+  }
   if (!(await Sharing.isAvailableAsync())) throw new Error('Sharing is not available on this device.');
   const backup = await buildBackup();
   const file = new File(Paths.cache, backupFileName());
@@ -50,7 +64,10 @@ export async function pickBackup(): Promise<PickResult> {
   if (result.canceled || !result.assets?.[0]) return { status: 'cancelled' };
   let parsed: unknown;
   try {
-    parsed = JSON.parse(await new File(result.assets[0].uri).text());
+    const asset = result.assets[0];
+    // On web the picker hands back a browser File; on iOS/Android read the copied file from the cache.
+    const text = Platform.OS === 'web' && asset.file ? await asset.file.text() : await new File(asset.uri).text();
+    parsed = JSON.parse(text);
   } catch {
     return { status: 'invalid', error: 'This file could not be read as an Umami backup.' };
   }

@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -112,6 +112,14 @@ export default function TodayScreen() {
             </Pressable>
           </View>
 
+          {Platform.OS === 'web' && (
+            <View style={[styles.webNote, { backgroundColor: theme.accentSoft }]}>
+              <ThemedText type="small" themeColor="textSecondary">
+                Web demo: your data stays in this browser. Reminders and the date picker are only in the mobile app.
+              </ThemedText>
+            </View>
+          )}
+
           {/* Workout or rest day */}
           {profile && week && !trainingToday ? (
             <RestBanner dayIndex={todayIndex} />
@@ -219,6 +227,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, paddingTop: Spacing.two },
   title: { fontSize: 26, fontWeight: '800', lineHeight: 32 },
   big: { fontSize: 18, fontWeight: '700' },
+  webNote: { padding: Spacing.three, borderRadius: Radius.md },
   button: { alignItems: 'center', padding: 14, borderRadius: Radius.md, marginTop: Spacing.one },
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.two + 2, borderRadius: Radius.md },
   rowEmoji: { fontSize: 22, lineHeight: 28 },

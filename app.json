@@ -17,8 +17,13 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "name": "Umami",
+      "shortName": "Umami",
+      "description": "Pantry, recipes, shopping and workouts in balance.",
+      "themeColor": "#27704F",
+      "backgroundColor": "#F6F5F1"
     },
     "plugins": [
       "expo-router",
@@ -43,6 +48,7 @@
       "expo-sharing"
     ],
     "experiments": {
+      "baseUrl": "/umami",
       "typedRoutes": true,
       "reactCompiler": true
     }

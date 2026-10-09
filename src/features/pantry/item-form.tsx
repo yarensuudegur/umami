@@ -2,7 +2,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -17,8 +16,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { showAlert } from '@/lib/dialog';
 
-import { formatDate, parseISODate, toISODate } from './status';
+import { formatDate, isValidISODate, parseISODate, toISODate } from './status';
 import { CATEGORIES, UNITS, type Category, type PantryItem, type Unit } from './types';
 
 type Props = {
@@ -63,18 +63,24 @@ export function ItemForm({ visible, item, initial, title, onClose, onSave, onDel
   const [expiry, setExpiry] = useState<string | undefined>(item?.expiryDate);
   const [threshold, setThreshold] = useState(start?.lowThreshold ? String(start.lowThreshold) : '');
   const [showPicker, setShowPicker] = useState(false);
+  // Web has no native date picker, so the expiry date is typed as YYYY-MM-DD there.
+  const [dateText, setDateText] = useState(item?.expiryDate ?? '');
 
   const parseNum = (s: string) => Number(s.replace(',', '.'));
 
   const submit = () => {
     const qty = parseNum(quantity);
     const low = threshold.trim() === '' ? 0 : parseNum(threshold);
-    if (!name.trim()) return Alert.alert('Name required', 'Please enter a name for this item.');
+    if (!name.trim()) return showAlert('Name required', 'Please enter a name for this item.');
     if (quantity.trim() === '' || !Number.isFinite(qty) || qty < 0)
-      return Alert.alert('Invalid quantity', 'Enter a number of 0 or more.');
+      return showAlert('Invalid quantity', 'Enter a number of 0 or more.');
     if (!Number.isFinite(low) || low < 0)
-      return Alert.alert('Invalid threshold', 'Enter a number of 0 or more, or leave it empty.');
-    onSave({ name: name.trim(), quantity: qty, unit, category, expiryDate: expiry, lowThreshold: low });
+      return showAlert('Invalid threshold', 'Enter a number of 0 or more, or leave it empty.');
+    if (Platform.OS === 'web' && dateText.trim() !== '' && !isValidISODate(dateText.trim())) {
+      return showAlert('Invalid date', 'Type the expiry date as YYYY-MM-DD, for example 2026-10-14, or leave it empty.');
+    }
+    const expiryDate = Platform.OS === 'web' ? dateText.trim() || undefined : expiry;
+    onSave({ name: name.trim(), quantity: qty, unit, category, expiryDate, lowThreshold: low });
   };
 
   const onDateChange = (e: DateTimePickerEvent, date?: Date) => {
@@ -142,6 +148,21 @@ export function ItemForm({ visible, item, initial, title, onClose, onSave, onDel
             </View>
 
             <ThemedText type="smallBold" themeColor="textSecondary">EXPIRY DATE</ThemedText>
+            {Platform.OS === 'web' ? (
+              <>
+                <TextInput
+                  style={inputStyle}
+                  value={dateText}
+                  onChangeText={setDateText}
+                  placeholder="YYYY-MM-DD (optional)"
+                  placeholderTextColor={theme.textSecondary}
+                  autoCapitalize="none"
+                />
+                <ThemedText type="small" themeColor="textSecondary">
+                  Example: 2026-10-14. Leave empty if it has no expiry date.
+                </ThemedText>
+              </>
+            ) : (
             <View style={styles.dateRow}>
               <Pressable style={[inputStyle, styles.dateButton]} onPress={() => setShowPicker((v) => !v)}>
                 <Ionicons name="calendar-outline" size={20} color={theme.accent} />
@@ -155,7 +176,8 @@ export function ItemForm({ visible, item, initial, title, onClose, onSave, onDel
                 </Pressable>
               )}
             </View>
-            {showPicker && (
+            )}
+            {Platform.OS !== 'web' && showPicker && (
               <DateTimePicker
                 value={expiry ? parseISODate(expiry) : new Date()}
                 mode="date"
@@ -179,7 +201,7 @@ export function ItemForm({ visible, item, initial, title, onClose, onSave, onDel
               <Pressable
                 style={[styles.delete, { backgroundColor: theme.dangerSoft }]}
                 onPress={() =>
-                  Alert.alert('Delete item', `Remove "${item.name}" from your pantry?`, [
+                  showAlert('Delete item', `Remove "${item.name}" from your pantry?`, [
                     { text: 'Cancel', style: 'cancel' },
                     { text: 'Delete', style: 'destructive', onPress: onDelete },
                   ])
