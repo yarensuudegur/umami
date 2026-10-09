@@ -6,6 +6,7 @@ import { useColorScheme } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { PantryProvider } from '@/features/pantry/pantry-provider';
 import { SettingsProvider } from '@/features/settings/settings-provider';
+import { ShoppingProvider } from '@/features/shopping/shopping-provider';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -24,6 +25,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
       <SettingsProvider>
+        <ShoppingProvider>
         <PantryProvider>
           <StatusBar style="auto" />
           <Tabs
@@ -51,6 +53,7 @@ export default function RootLayout() {
             ))}
           </Tabs>
         </PantryProvider>
+        </ShoppingProvider>
       </SettingsProvider>
     </ThemeProvider>
   );

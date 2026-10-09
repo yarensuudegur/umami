@@ -114,6 +114,15 @@ export function analyzeRecipe(recipe: Recipe, pantry: PantryItem[], servings = r
   };
 }
 
+/** What to put on the shopping list for a recipe: the full amount if missing, the shortfall if short. */
+export function missingToShop(problems: IngredientStatus[]): { name: string; amount: number; unit: Unit }[] {
+  return problems.map((p) => ({
+    name: p.ingredient.name,
+    amount: p.status === 'short' && p.shortBy !== undefined ? p.shortBy : p.needed,
+    unit: p.ingredient.unit,
+  }));
+}
+
 export function usesPantryItem(recipe: Recipe, item: PantryItem): boolean {
   return recipe.ingredients.some((ing) => !isStaple(ing) && ingredientMatches(ing, item));
 }

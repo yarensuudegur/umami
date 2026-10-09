@@ -7,10 +7,11 @@ import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { usePantry } from '@/features/pantry/pantry-provider';
 import { useSettings } from '@/features/settings/settings-provider';
+import { useShopping } from '@/features/shopping/shopping-provider';
 import { useTheme } from '@/hooks/use-theme';
 
 import { planCooking } from './cook';
-import { analyzeRecipe, formatAmount } from './matching';
+import { analyzeRecipe, formatAmount, missingToShop } from './matching';
 import type { Recipe } from './types';
 
 /** Mounted fresh per recipe (via `key`) so the servings stepper starts at the recipe default. */
@@ -20,7 +21,10 @@ export function RecipeDetail({ recipe, onClose }: { recipe: Recipe; onClose: () 
   const { settings } = useSettings();
   const [servings, setServings] = useState(recipe.servings);
 
+  const { addMissing, isOnList } = useShopping();
+
   const analysis = useMemo(() => analyzeRecipe(recipe, items, servings), [recipe, items, servings]);
+  const onList = isOnList(analysis.problems.map((p) => p.ingredient.name));
   const goalPct = Math.round((recipe.proteinPerServing / settings.dailyProteinGoal) * 100);
 
   const cook = () => {
@@ -130,6 +134,17 @@ export function RecipeDetail({ recipe, onClose }: { recipe: Recipe; onClose: () 
         </ScrollView>
 
         <View style={[styles.footer, { borderTopColor: theme.border, backgroundColor: theme.background }]}>
+          {analysis.problems.length > 0 && (
+            <Pressable
+              onPress={() => addMissing(missingToShop(analysis.problems), recipe.name)}
+              disabled={onList}
+              style={[styles.addMissing, { borderColor: theme.accent, backgroundColor: onList ? theme.accentSoft : 'transparent' }]}>
+              <Ionicons name={onList ? 'checkmark-circle' : 'cart-outline'} size={20} color={theme.accent} />
+              <ThemedText style={{ color: theme.accent, fontWeight: '700' }}>
+                {onList ? 'On your shopping list' : `Add ${analysis.problems.length} missing to shopping list`}
+              </ThemedText>
+            </Pressable>
+          )}
           <Pressable onPress={cook} style={({ pressed }) => [styles.cook, { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 }]}>
             <Ionicons name="flame" size={20} color={theme.onAccent} />
             <ThemedText style={{ color: theme.onAccent, fontWeight: '700', fontSize: 16 }}>I cooked this</ThemedText>
@@ -161,6 +176,7 @@ const styles = StyleSheet.create({
   stepRow: { flexDirection: 'row', gap: Spacing.three, alignItems: 'flex-start' },
   stepNum: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   stepText: { flex: 1 },
-  footer: { padding: Spacing.three, borderTopWidth: StyleSheet.hairlineWidth },
+  footer: { padding: Spacing.three, gap: Spacing.two, borderTopWidth: StyleSheet.hairlineWidth },
+  addMissing: { flexDirection: 'row', gap: Spacing.two, alignItems: 'center', justifyContent: 'center', padding: Spacing.three, borderRadius: Radius.md, borderWidth: 1.5 },
   cook: { flexDirection: 'row', gap: Spacing.two, alignItems: 'center', justifyContent: 'center', padding: Spacing.three, borderRadius: Radius.md },
 });

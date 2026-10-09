@@ -24,6 +24,10 @@ import { CATEGORIES, UNITS, type Category, type PantryItem, type Unit } from './
 type Props = {
   visible: boolean;
   item: PantryItem | null; // null = creating
+  /** Prefill for a new item (ignored when editing `item`). */
+  initial?: Partial<Omit<PantryItem, 'id'>>;
+  /** Overrides the default "New item" / "Edit item" header. */
+  title?: string;
   onClose: () => void;
   onSave: (data: Omit<PantryItem, 'id'>) => void;
   onDelete?: () => void;
@@ -48,15 +52,16 @@ function Chip({ label, selected, onPress }: { label: string; selected: boolean; 
   );
 }
 
-export function ItemForm({ visible, item, onClose, onSave, onDelete }: Props) {
+export function ItemForm({ visible, item, initial, title, onClose, onSave, onDelete }: Props) {
   const theme = useTheme();
   // The parent mounts this component fresh (via `key`) for each open, so initial state is enough.
-  const [name, setName] = useState(item?.name ?? '');
-  const [quantity, setQuantity] = useState(item ? String(item.quantity) : '');
-  const [unit, setUnit] = useState<Unit>(item?.unit ?? 'pcs');
-  const [category, setCategory] = useState<Category>(item?.category ?? 'Other');
+  const start = item ?? initial;
+  const [name, setName] = useState(start?.name ?? '');
+  const [quantity, setQuantity] = useState(start?.quantity ? String(start.quantity) : '');
+  const [unit, setUnit] = useState<Unit>(start?.unit ?? 'pcs');
+  const [category, setCategory] = useState<Category>(start?.category ?? 'Other');
   const [expiry, setExpiry] = useState<string | undefined>(item?.expiryDate);
-  const [threshold, setThreshold] = useState(item ? String(item.lowThreshold) : '');
+  const [threshold, setThreshold] = useState(start?.lowThreshold ? String(start.lowThreshold) : '');
   const [showPicker, setShowPicker] = useState(false);
 
   const parseNum = (s: string) => Number(s.replace(',', '.'));
@@ -92,7 +97,7 @@ export function ItemForm({ visible, item, onClose, onSave, onDelete }: Props) {
             <Pressable onPress={onClose} hitSlop={12}>
               <ThemedText style={{ color: theme.textSecondary }}>Cancel</ThemedText>
             </Pressable>
-            <ThemedText style={styles.headerTitle}>{item ? 'Edit item' : 'New item'}</ThemedText>
+            <ThemedText style={styles.headerTitle}>{title ?? (item ? 'Edit item' : 'New item')}</ThemedText>
             <Pressable onPress={submit} hitSlop={12}>
               <ThemedText style={{ color: theme.accent, fontWeight: '700' }}>Save</ThemedText>
             </Pressable>

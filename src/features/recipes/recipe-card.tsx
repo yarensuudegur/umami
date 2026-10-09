@@ -1,17 +1,21 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
+import { useShopping } from '@/features/shopping/shopping-provider';
 import { useTheme } from '@/hooks/use-theme';
 
-import type { RecipeAnalysis } from './matching';
+import { missingToShop, type RecipeAnalysis } from './matching';
 
 type Props = { analysis: RecipeAnalysis; usesTodayItem: boolean; onPress: () => void };
 
 export function RecipeCard({ analysis, usesTodayItem, onPress }: Props) {
   const theme = useTheme();
+  const { addMissing, isOnList } = useShopping();
   const { recipe, problems, expiringItems } = analysis;
   const highlight = expiringItems.length > 0;
+  const onList = isOnList(problems.map((p) => p.ingredient.name));
 
   return (
     <Pressable
@@ -59,6 +63,16 @@ export function RecipeCard({ analysis, usesTodayItem, onPress }: Props) {
           </ThemedText>
         )}
       </View>
+      {problems.length > 0 && (
+        <Pressable
+          onPress={() => addMissing(missingToShop(problems), recipe.name)}
+          disabled={onList}
+          hitSlop={8}
+          accessibilityLabel={onList ? 'Missing items are on your shopping list' : 'Add missing items to shopping list'}
+          style={[styles.cart, { backgroundColor: onList ? theme.accentSoft : theme.backgroundSelected }]}>
+          <Ionicons name={onList ? 'checkmark' : 'cart-outline'} size={20} color={onList ? theme.accent : theme.text} />
+        </Pressable>
+      )}
     </Pressable>
   );
 }
@@ -72,5 +86,6 @@ const styles = StyleSheet.create({
   pills: { flexDirection: 'row', gap: Spacing.two, marginTop: 2 },
   pill: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: Radius.pill, alignSelf: 'flex-start' },
   flag: { marginTop: 2 },
+  cart: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start' },
   pillText: { fontSize: 12, fontWeight: '700', lineHeight: 16 },
 });
