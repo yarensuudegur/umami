@@ -1,24 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-const KEY = 'umami.settings.v1';
-
-export type Settings = { dailyProteinGoal: number };
-export const DEFAULT_SETTINGS: Settings = { dailyProteinGoal: 120 };
+import { DEFAULT_SETTINGS, parseSettings, SETTINGS_KEY, type NotificationPrefs, type Settings } from './settings-model';
 
 type SettingsContextValue = {
   settings: Settings;
   setDailyProteinGoal: (grams: number) => void;
+  updateNotifications: (patch: Partial<NotificationPrefs>) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 async function loadSettings(): Promise<Settings> {
   try {
-    const raw = await AsyncStorage.getItem(KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    const goal = Number(parsed?.dailyProteinGoal);
-    return { ...DEFAULT_SETTINGS, ...(Number.isFinite(goal) && goal > 0 ? { dailyProteinGoal: goal } : {}) };
+    const raw = await AsyncStorage.getItem(SETTINGS_KEY);
+    return parseSettings(raw ? JSON.parse(raw) : null);
   } catch {
     return DEFAULT_SETTINGS;
   }
@@ -37,14 +33,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!loaded) return;
-    AsyncStorage.setItem(KEY, JSON.stringify(settings)).catch(() => {});
+    AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)).catch(() => {});
   }, [settings, loaded]);
 
   const setDailyProteinGoal = useCallback((grams: number) => {
     setSettings((prev) => ({ ...prev, dailyProteinGoal: grams }));
   }, []);
 
-  const value = useMemo(() => ({ settings, setDailyProteinGoal }), [settings, setDailyProteinGoal]);
+  const updateNotifications = useCallback((patch: Partial<NotificationPrefs>) => {
+    setSettings((prev) => ({ ...prev, notifications: { ...prev.notifications, ...patch } }));
+  }, []);
+
+  const value = useMemo(
+    () => ({ settings, setDailyProteinGoal, updateNotifications }),
+    [settings, setDailyProteinGoal, updateNotifications],
+  );
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
 

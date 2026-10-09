@@ -4,7 +4,9 @@ import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { NotificationSync } from '@/features/notifications/notification-sync';
 import { PantryProvider } from '@/features/pantry/pantry-provider';
+import { DataRoot } from '@/features/settings/data-root';
 import { SettingsProvider } from '@/features/settings/settings-provider';
 import { ShoppingProvider } from '@/features/shopping/shopping-provider';
 import { WorkoutProvider } from '@/features/workout/workout-provider';
@@ -25,11 +27,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <DataRoot>
       <SettingsProvider>
         <ShoppingProvider>
         <WorkoutProvider>
         <PantryProvider>
           <StatusBar style="auto" />
+          <NotificationSync />
           <Tabs
             screenOptions={{
               headerShown: false,
@@ -58,6 +62,7 @@ export default function RootLayout() {
         </WorkoutProvider>
         </ShoppingProvider>
       </SettingsProvider>
+      </DataRoot>
     </ThemeProvider>
   );
 }
